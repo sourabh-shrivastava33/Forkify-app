@@ -1,0 +1,81 @@
+import icons from '../../img/icons.svg';
+export default class View {
+  _data;
+
+  render(data, render = true) {
+    if (!data || (Array.isArray(data) && data.length === 0))
+      return this.renderError();
+
+    this._data = data;
+
+    const markup = this._generateMarkup();
+    if (!render) return markup;
+    this._clean();
+    this._parentEl.insertAdjacentHTML('afterbegin', markup);
+  }
+  update(data) {
+    this._data = data;
+    // console.log(this._data);
+    const newMarkup = this._generateMarkup();
+    const newDom = document.createRange().createContextualFragment(newMarkup);
+    const newElements = Array.from(newDom.querySelectorAll('*'));
+    const curELements = Array.from(this._parentEl.querySelectorAll('*'));
+
+    newElements.forEach((newEl, i) => {
+      const curEl = curELements[i];
+      if (
+        !newEl.isEqualNode(curEl) &&
+        newEl.firstChild?.textContent.trim() !== ''
+      ) {
+        curEl.textContent = newEl.textContent;
+      }
+      if (!newEl.isEqualNode(curEl)) {
+        Array.from(newEl.attributes).forEach(attr => {
+          curEl.setAttribute(attr.name, attr.value);
+        });
+      }
+    });
+
+    // console.log(curEl);
+  }
+
+  _clean() {
+    this._parentEl.innerHTML = '';
+  }
+  renderSpinner() {
+    const markup = `<div class="spinner">
+    <svg>
+      <use href="${icons}#icon-loader"></use>
+    </svg>
+  </div>`;
+
+    // this._clean();
+    this._parentEl.innerHTML = '';
+
+    this._parentEl.insertAdjacentHTML('afterbegin', markup);
+  }
+  renderError(message = this._ErrorMessage) {
+    const markup = `<div class="error">
+        <div>
+          <svg>
+            <use href="${icons}#icon-alert-triangle"></use>
+          </svg>
+        </div>
+      <p>${message}</p>
+    </div>  `;
+    this._clean();
+    this._parentEl.insertAdjacentHTML('afterbegin', markup);
+  }
+  renderMessage(message = this._message) {
+    const markup = `<div class="error">
+        <div>
+          <svg>
+            <use href="${icons}#icon-alert-triangle"></use>
+          </svg>
+        </div>
+      <p>${message}</p>
+    </div>  `;
+    this._clean();
+    this._parentEl.insertAdjacentHTML('afterbegin', markup);
+  }
+}
